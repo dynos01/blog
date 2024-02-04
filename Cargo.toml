@@ -1,0 +1,13 @@
+[workspace]
+members = ["backend", "backend/entity", "backend/migration", "frontend"]
+resolver = "2"
+
+[profile.release]
+strip = true
+lto = true
+panic = "abort"
+codegen-units = 1
+opt-level = 3
+
+[profile.dev.package.frontend]
+opt-level = "z"

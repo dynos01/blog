@@ -1,0 +1,6 @@
+# src: /etc/mime.types
+application/wasm                    wasm
+font/ttf                            ttf
+text/css                            css
+text/javascript                     js
+image/svg+xml                       svg

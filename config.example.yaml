@@ -1,0 +1,3 @@
+database_path: "blog.sqlite"
+bind: "127.0.0.1:9008"
+locale: "en"

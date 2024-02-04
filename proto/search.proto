@@ -1,0 +1,7 @@
+syntax = "proto3";
+
+package blog.search;
+
+message SearchRequest { string query = 1; }
+
+message SearchResponse { repeated string result = 1; }

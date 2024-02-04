@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package article.search;
+
+message Article {
+  optional string title = 1;
+  string url = 2;
+  optional string markdown = 3;
+  optional string content = 4;
+}
