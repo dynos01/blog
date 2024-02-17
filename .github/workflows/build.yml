@@ -1,0 +1,49 @@
+name: Build Binary
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install Rust (Nightly)
+        run: |
+          curl https://sh.rustup.rs -sSf | sh -s -- -y
+          source "$HOME/.cargo/env"
+          rustup install nightly
+
+      - name: Install WASM toolchain
+        run: |
+          source "$HOME/.cargo/env"
+          rustup target add wasm32-unknown-unknown --toolchain nightly
+
+      - name: Install wasm-pack
+        run: |
+          source "$HOME/.cargo/env"
+          cargo install wasm-pack
+
+      - name: Install packages
+        run: sudo apt update && apt install -y musl musl-tools musl-dev protobuf-compiler
+
+      - name: Install x86_64-unknown-linux-musl target
+        run: |
+          source "$HOME/.cargo/env"
+          rustup target add x86_64-unknown-linux-musl
+
+      - name: Build
+        run: |
+          source "$HOME/.cargo/env"
+          make
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: blog
+          path: build/blog
