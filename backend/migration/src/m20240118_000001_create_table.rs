@@ -22,10 +22,10 @@ impl MigrationTrait for Migration {
                     .col(ColumnDef::new(Article::Url).string().unique_key())
                     .col(ColumnDef::new(Article::Markdown).string())
                     .col(ColumnDef::new(Article::Content).string())
+                    .col(ColumnDef::new(Article::Excerpt).string())
                     .col(ColumnDef::new(Article::Created).integer().not_null())
                     .col(ColumnDef::new(Article::Updated).integer())
                     .col(ColumnDef::new(Article::Type).integer())
-                    .col(ColumnDef::new(Article::Comment).integer())
                     .to_owned(),
             )
             .await?;
@@ -102,11 +102,11 @@ enum Article {
     Title,
     Url,
     Markdown,
+    Excerpt,
     Content,
     Created,
     Updated,
     Type,
-    Comment,
 }
 
 #[derive(DeriveIden)]

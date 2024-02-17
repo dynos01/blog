@@ -118,11 +118,6 @@ hr {
 .header-nav a {
     font-size: 20px;
     padding: 5px 15px;
-}
-
-.header-nav a {
-    font-size: 20px;
-    padding: 5px 15px;
     margin-left: 10px;
     text-decoration: none;
     color: #4b4b4b;
@@ -146,10 +141,11 @@ hr {
     justify-content: space-between;
     font-size: 0.9rem;
     color: #666;
+    width: auto;
 }
 
 .content {
-    max-width: 720px;
+    width: 720px;
     margin: 0 auto;
     flex: 1;
     padding: 20px 0;
@@ -177,4 +173,72 @@ hr {
     padding: 20px 0;
     font-size: 14px;
     color: #666;
+}
+
+.index-article-list {
+    margin: auto;
+}
+
+.index-article {
+    margin-bottom: 20px;
+    padding: 20px;
+    border-bottom: 1px solid #e0e0e0;
+    position: relative;
+    width: 100%;
+}
+
+.index-article-title a,
+.index-article-title a:hover,
+.index-article-title a:active {
+    font-size: 24px;
+    color: #333;
+    text-decoration: none;
+    margin-bottom: 10px;
+}
+
+.index-article-excerpt {
+    font-size: 16px;
+    color: #666;
+    margin-bottom: 10px;
+}
+
+.index-article-time {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    font-size: 14px;
+    color: #999;
+}
+
+.index-next-prev {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    margin-top: 80px;
+}
+
+.index-next {
+    display: inline-block;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-image: url('/asset/icon/page_next.svg');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-color: transparent;
+    text-decoration: none;
+    pointer-events: auto;
+}
+
+.index-prev {
+    display: inline-block;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-image: url('/asset/icon/page_prev.svg');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-color: transparent;
+    text-decoration: none;
+    pointer-events: auto;
 }

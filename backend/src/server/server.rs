@@ -7,7 +7,10 @@ use tokio::net::TcpListener;
 
 use crate::{
     server::{
-        article::article_handler, asset::asset_handler, request_logger::request_logger,
+        article::article_handler,
+        asset::asset_handler,
+        index::{index_handler, index_page_handler},
+        request_logger::request_logger,
         search::search_handler,
     },
     site::Site,
@@ -15,6 +18,8 @@ use crate::{
 
 pub async fn serve(bind: SocketAddr, site: Site) -> Result<()> {
     let app = Router::new()
+        .route("/", get(index_handler))
+        .route("/page/:page", get(index_page_handler))
         .route("/api/search", get(search_handler))
         .route("/article/:url", get(article_handler))
         .route("/asset/*path", get(asset_handler))

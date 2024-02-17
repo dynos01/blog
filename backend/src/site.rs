@@ -3,10 +3,10 @@ use std::{collections::HashMap, sync::Mutex};
 use anyhow::Result;
 use chrono::{Datelike, Local};
 use futures::executor;
-use log::warn;
+use log::{debug, warn};
 use sea_orm::{ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter};
 use serde::{Serialize, Serializer};
-use tera::Context;
+use tera::{Context, Tera};
 
 use entity::{
     metadata::{self, Model as Metadata},
@@ -30,6 +30,7 @@ pub struct Site {
     text: Text,
     db: DatabaseConnection,
     metadata: Mutex<HashMap<&'static str, Type>>,
+    templates: Tera,
 }
 
 pub enum Str {
@@ -70,11 +71,14 @@ impl Site {
             }
         }
 
+        let templates = init_tera()?;
+
         Ok(Self {
             article_manager: am,
             text,
             db,
             metadata: Mutex::new(metadata),
+            templates,
         })
     }
 
@@ -95,6 +99,10 @@ impl Site {
         }
 
         Ok(())
+    }
+
+    pub fn render(&self, template: &'static str, context: &Context) -> Result<String> {
+        Ok(self.templates.render(template, context)?)
     }
 
     pub fn get_author(&self) -> Str {
@@ -163,4 +171,28 @@ async fn get_value_from_db(db: &DatabaseConnection, key: &str) -> Result<Option<
     };
 
     Ok(Some(entry))
+}
+
+fn init_tera() -> Result<Tera> {
+    let templates = {
+        mod template {
+            include!(concat!(env!("OUT_DIR"), "/template.rs"));
+        }
+
+        template::TEMPLATES
+            .into_iter()
+            .map(|(name, template)| try {
+                let template = std::str::from_utf8(template)?;
+                (name, template)
+            })
+            .collect::<Result<Vec<_>>>()?
+    };
+
+    let mut tera = Tera::default();
+    tera.add_raw_templates(templates)?;
+    tera.autoescape_on(vec![]);
+
+    debug!("Loaded {} template(s)", tera.templates.len());
+
+    Ok(tera)
 }

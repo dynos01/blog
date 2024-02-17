@@ -47,7 +47,7 @@ async fn article_impl(site: Arc<Site>, url: &str) -> Result<Option<String>> {
     context.insert("content", &content);
     context.insert("created", &created);
 
-    let rendered = site.article_manager.render(&context)?;
+    let rendered = site.render("article.html", &context)?;
     let minified = minify_html(rendered)?;
 
     Ok(Some(minified))

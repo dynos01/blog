@@ -3,7 +3,7 @@ use hashbrown::HashMap;
 use log::debug;
 use parking_lot::RwLock;
 use sea_orm::{ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter};
-use tera::{Context, Tera};
+use serde::Serialize;
 
 use entity::{
     article::{self, Model as Article},
@@ -13,18 +13,21 @@ use entity::{
 pub struct ArticleManager {
     db: DatabaseConnection,
     cache: RwLock<HashMap<String, Article>>,
-    templates: Tera,
+}
+
+#[derive(Serialize)]
+pub struct ArticleMetadata {
+    pub title: Option<String>,
+    pub excerpt: Option<String>,
+    pub created: String,
+    pub updated: Option<String>,
+    pub url: String,
 }
 
 impl ArticleManager {
     pub fn new(db: DatabaseConnection) -> Result<Self> {
         let cache = RwLock::new(HashMap::new());
-        let templates = init_tera()?;
-        Ok(Self {
-            db,
-            cache,
-            templates,
-        })
+        Ok(Self { db, cache })
     }
 
     pub async fn get_article(&self, url: &str) -> Result<Option<Article>> {
@@ -83,31 +86,40 @@ impl ArticleManager {
         self.cache.write().remove(article);
     }
 
-    pub fn render(&self, context: &Context) -> Result<String> {
-        Ok(self.templates.render("article.html", context)?)
-    }
-}
-
-fn init_tera() -> Result<Tera> {
-    let templates = {
-        mod template {
-            include!(concat!(env!("OUT_DIR"), "/template.rs"));
-        }
-
-        template::TEMPLATES
+    pub async fn get_all_article_metadatas(&self) -> Result<Vec<ArticleMetadata>> {
+        let mut articles: Vec<Article> = ArticleEntity::find()
+            .all(&self.db)
+            .await?
             .into_iter()
-            .map(|(name, template)| try {
-                let template = std::str::from_utf8(template)?;
-                (name, template)
+            .map(|article| article.into())
+            .collect();
+
+        articles.sort_by(|a, b| {
+            b.updated
+                .unwrap_or(b.created)
+                .cmp(&a.updated.unwrap_or(a.created))
+        });
+
+        // sort by update time
+        let mut articles = articles;
+        articles.sort_by(|a, b| {
+            b.updated
+                .unwrap_or(b.created)
+                .cmp(&a.updated.unwrap_or(a.created))
+        });
+
+        let metadata: Vec<ArticleMetadata> = articles
+            .into_iter()
+            .map(|article| ArticleMetadata {
+                title: article.title,
+                excerpt: article.excerpt,
+                // TODO: real format
+                created: format!("{}", article.created),
+                updated: article.updated.map(|t| format!("{}", t)),
+                url: article.url,
             })
-            .collect::<Result<Vec<_>>>()?
-    };
+            .collect();
 
-    let mut tera = Tera::default();
-    tera.add_raw_templates(templates)?;
-    tera.autoescape_on(vec![]);
-
-    debug!("Loaded {} template(s)", tera.templates.len());
-
-    Ok(tera)
+        Ok(metadata)
+    }
 }

@@ -2,3 +2,5 @@
 /asset/blog_bg.wasm
 /build
 /target
+blog.sqlite
+.vscode

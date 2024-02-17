@@ -11,10 +11,10 @@ pub struct Model {
     pub url: String,
     pub markdown: Option<String>,
     pub content: Option<String>,
+    pub excerpt: Option<String>,
     pub created: i64,
     pub updated: Option<i64>,
     pub r#type: i32,
-    pub comment: i32,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

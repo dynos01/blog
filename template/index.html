@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="content">
+    <div class="index-article-list">
+        {% for article in articles %}
+        <div class="index-article">
+            <h2 class="index-article-title"><a href="/article/{{ article.url }}">{{ article.title }}</a></h2>
+            <p class="index-article-excerpt">{{ article.excerpt }}</p>
+            <div class="index-article-time">
+                <span>{{ article.created }}</span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="index-next-prev">
+        {% if prev %}
+        <a href="/page/{{ prev }}" class="index-prev"></a>
+        {% endif %}
+
+        {% if next %}
+        <a href="/page/{{ next }}" class="index-next"></a>
+        {% endif %}
+    </div>
+</div>
+{% endblock content %}
