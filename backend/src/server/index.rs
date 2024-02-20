@@ -14,7 +14,7 @@ use crate::{site::Site, util::*};
 const ARTICLES_PER_PAGE: usize = 10;
 
 pub async fn index_handler(Extension(site): Extension<Arc<Site>>) -> impl IntoResponse {
-    let text = match index_impl(site, 0).await {
+    let text = match index_impl(site, 1).await {
         Ok(text) => text,
         Err(e) => {
             warn!("Failed to handle request for /: {e}");
