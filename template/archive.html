@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="content">
+    <div class="archive">
+        {% for year in archive.years %}
+        <div class="archive-year">
+            <h2>{{ year.year }}</h2>
+            <ul>
+                {% for article in year.articles %}
+                <li><a href="/article/{{ article.url }}">{{ article.title }}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock content %}

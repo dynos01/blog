@@ -115,11 +115,14 @@ impl ArticleManager {
             .map(|article| {
                 let year = {
                     let timestamp = article.updated.unwrap_or(article.created);
-                    let dt = Local.timestamp_opt(timestamp, 0).map(|dt| dt.year());
-                    dt.single().unwrap_or_else(|| {
-                        warn!("Invalid timestamp {timestamp}");
-                        0
-                    })
+                    Local
+                        .timestamp_opt(timestamp, 0)
+                        .map(|dt| dt.year())
+                        .single()
+                        .unwrap_or_else(|| {
+                            warn!("Invalid timestamp {timestamp}");
+                            0
+                        })
                 } as u64;
 
                 ArticleMetadata {
