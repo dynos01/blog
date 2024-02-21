@@ -1,6 +1,7 @@
 use anyhow::Result;
+use chrono::{Datelike, Local, TimeZone};
 use hashbrown::HashMap;
-use log::debug;
+use log::{debug, warn};
 use parking_lot::RwLock;
 use sea_orm::{ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter};
 use serde::Serialize;
@@ -22,6 +23,7 @@ pub struct ArticleMetadata {
     pub created: String,
     pub updated: Option<String>,
     pub url: String,
+    pub year: u64,
 }
 
 impl ArticleManager {
@@ -110,13 +112,25 @@ impl ArticleManager {
 
         let metadata: Vec<ArticleMetadata> = articles
             .into_iter()
-            .map(|article| ArticleMetadata {
-                title: article.title,
-                excerpt: article.excerpt,
-                // TODO: real format
-                created: format!("{}", article.created),
-                updated: article.updated.map(|t| format!("{}", t)),
-                url: article.url,
+            .map(|article| {
+                let year = {
+                    let timestamp = article.updated.unwrap_or(article.created);
+                    let dt = Local.timestamp_opt(timestamp, 0).map(|dt| dt.year());
+                    dt.single().unwrap_or_else(|| {
+                        warn!("Invalid timestamp {timestamp}");
+                        0
+                    })
+                } as u64;
+
+                ArticleMetadata {
+                    title: article.title,
+                    excerpt: article.excerpt,
+                    // TODO: real format
+                    created: format!("{}", article.created),
+                    updated: article.updated.map(|t| format!("{}", t)),
+                    url: article.url,
+                    year,
+                }
             })
             .collect();
 
