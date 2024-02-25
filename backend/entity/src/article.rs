@@ -7,11 +7,11 @@ use sea_orm::entity::prelude::*;
 pub struct Model {
     #[sea_orm(primary_key)]
     pub article_id: i64,
-    pub title: Option<String>,
+    pub title: String,
     pub url: String,
-    pub markdown: Option<String>,
-    pub content: Option<String>,
-    pub excerpt: Option<String>,
+    pub markdown: String,
+    pub content: String,
+    pub excerpt: String,
     pub created: i64,
     pub updated: Option<i64>,
     pub r#type: i32,

@@ -35,7 +35,7 @@ async fn search_impl(site: Arc<Site>, body: Vec<u8>) -> Result<Vec<u8>> {
         .search(&request.query)
         .await?
         .into_iter()
-        .filter_map(|a| a.title)
+        .map(|a| a.title)
         .collect();
     let response = SearchResponse { result };
     let response = protobuf_encode(response)?;

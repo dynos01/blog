@@ -37,8 +37,8 @@ async fn article_impl(site: Arc<Site>, url: &str) -> Result<Option<String>> {
     };
 
     let author = site.get_author();
-    let title = article.title.unwrap_or(String::from("(no title)"));
-    let content = article.content.unwrap_or(String::from(""));
+    let title = article.title;
+    let content = article.content;
     let created = site.format_time(article.created);
 
     let mut context = site.base_context();

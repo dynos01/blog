@@ -61,7 +61,7 @@ async fn archive_impl(site: Arc<Site>) -> Result<String> {
 
     for article in metadata {
         let year = article.year;
-        let title = article.title.unwrap(); // todo: clean db
+        let title = article.title;
         let url = article.url;
 
         if year == curr.year {

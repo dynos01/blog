@@ -18,8 +18,8 @@ pub struct ArticleManager {
 
 #[derive(Serialize)]
 pub struct ArticleMetadata {
-    pub title: Option<String>,
-    pub excerpt: Option<String>,
+    pub title: String,
+    pub excerpt: String,
     pub created: String,
     pub updated: Option<String>,
     pub url: String,
