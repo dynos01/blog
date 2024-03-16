@@ -96,7 +96,12 @@ fn on_scroll_impl() -> Result<()> {
                 .as_f64()
                 .ok_or(anyhow!("cannot convert inner_height to f64"))?;
 
-            offset + viewport_height > threshold
+            if viewport_height > threshold {
+                let threshold = viewport_height - threshold;
+                offset > threshold
+            } else {
+                offset + viewport_height > threshold
+            }
         };
 
         show.unwrap_or_else(|e| {
