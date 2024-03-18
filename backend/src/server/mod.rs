@@ -1,6 +1,7 @@
 mod archive;
 mod article;
 mod asset;
+mod editor;
 mod index;
 mod request_logger;
 mod search;

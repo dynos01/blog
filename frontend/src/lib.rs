@@ -1,5 +1,6 @@
 #![feature(try_blocks)]
 
+mod editor;
 mod scroll_to_top;
 
 use anyhow::{anyhow, Result};
@@ -7,7 +8,7 @@ use wasm_bindgen::prelude::wasm_bindgen;
 use web_sys::{console, window};
 use yew::{html, Component, Context, Html, Renderer};
 
-use crate::scroll_to_top::ScrollToTop;
+use crate::{editor::MarkdownRenderer, scroll_to_top::ScrollToTop};
 
 struct App;
 
@@ -53,6 +54,15 @@ fn start_impl() -> Result<()> {
         .ok_or(anyhow!("failed to get element with id \"app\""))?;
 
     Renderer::<App>::with_root(app_element).render();
+
+    let url = window
+        .location()
+        .pathname()
+        .map_err(|_| anyhow!("failed to get pathname"))?;
+
+    if url == "/editor" {
+        MarkdownRenderer::start()?;
+    }
 
     Ok(())
 }

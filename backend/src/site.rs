@@ -31,6 +31,7 @@ pub struct Site {
     db: DatabaseConnection,
     metadata: Mutex<HashMap<&'static str, Type>>,
     templates: Tera,
+    pub admin: (String, String),
 }
 
 pub enum Str {
@@ -79,6 +80,7 @@ impl Site {
             db,
             metadata: Mutex::new(metadata),
             templates,
+            admin: (config.username.clone(), config.password.clone()),
         })
     }
 

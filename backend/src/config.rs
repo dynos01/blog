@@ -32,6 +32,8 @@ pub struct Config {
     pub database_path: String,
     pub bind: SocketAddr,
     pub locale: Locale,
+    pub username: String,
+    pub password: String,
 }
 
 pub async fn build_config(args: Args) -> Result<Config> {

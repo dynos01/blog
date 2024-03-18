@@ -273,3 +273,47 @@ hr {
 .archive-year ul li a:hover {
     color: #007bff;
 }
+
+.editor {
+    height: 75%;
+    width: 60vw;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.editor-title {
+    text-align: center;
+    padding: 20px 0;
+    height: 10vh;
+}
+
+.editor-workspace {
+    display: flex;
+    height: 60vh;
+    gap: 100px;
+    margin: 0 auto;
+    overflow: hidden;
+}
+
+#editor-markdown,
+#editor-html {
+    flex: 1;
+    padding: 20px;
+    height: auto;
+    overflow-y: auto;
+    box-sizing: border-box;
+}
+
+#editor-markdown {
+    background-color: #f7f7f7;
+    outline: none;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+#editor-html {
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}

@@ -4,12 +4,14 @@ use anyhow::Result;
 use axum::{extract::Extension, middleware, routing::get, Router};
 use log::debug;
 use tokio::net::TcpListener;
+use tower_http::auth::AddAuthorizationLayer;
 
 use crate::{
     server::{
         archive::archive_handler,
         article::article_handler,
         asset::asset_handler,
+        editor::editor_handler,
         index::{index_handler, index_page_handler},
         request_logger::request_logger,
         search::search_handler,
@@ -18,7 +20,12 @@ use crate::{
 };
 
 pub async fn serve(bind: SocketAddr, site: Site) -> Result<()> {
+    let editor = Router::new()
+        .route("/editor", get(editor_handler))
+        .layer(AddAuthorizationLayer::basic(&site.admin.0, &site.admin.1));
+
     let app = Router::new()
+        .merge(editor)
         .route("/", get(index_handler))
         .route("/archive", get(archive_handler))
         .route("/page/:page", get(index_page_handler))
