@@ -7,10 +7,12 @@ build = "build.rs"
 [dependencies]
 anyhow = "1.0.79"
 axum = "0.7.4"
+base64 = "0.22.0"
 chrono = "0.4.33"
 clap = { version = "4.4.18", features = ["derive"] }
 entity = { path = "entity" }
 futures = "0.3.30"
+futures-util = "0.3.30"
 hashbrown = "0.14"
 log = "0.4.20"
 migration = { path = "migration" }
@@ -23,7 +25,7 @@ serde = { version = "1.0.195", features = ["derive"] }
 serde_yaml = "0.9.30"
 tera = "1.19.1"
 tokio = { version = "1.35.0", features = ["macros", "rt-multi-thread"] }
-tower-http = { version = "0.5.2", features = ["auth"] }
+tower = "0.4.13"
 tracing = "0.1.40"
 tracing-subscriber  = "0.3.18"
 
