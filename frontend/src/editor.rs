@@ -87,8 +87,11 @@ fn on_input_impl() -> Result<()> {
         .ok_or(anyhow!("failed to get window"))?
         .document()
         .ok_or(anyhow!("failed to get document"))?
-        .get_element_by_id("editor-html")
-        .ok_or(anyhow!("failed to get element with id \"editor-html\""))?
+        .get_elements_by_class_name("markdown-body")
+        .get_with_index(0)
+        .ok_or(anyhow!(
+            "failed to get element with class \"markdown-body\""
+        ))?
         .set_inner_html(&html_output);
 
     Ok(())
