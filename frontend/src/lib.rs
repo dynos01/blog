@@ -2,13 +2,14 @@
 
 mod editor;
 mod scroll_to_top;
+mod util;
 
 use anyhow::{anyhow, Result};
 use wasm_bindgen::prelude::wasm_bindgen;
-use web_sys::{console, window};
+use web_sys::console;
 use yew::{html, Component, Context, Html, Renderer};
 
-use crate::{editor::MarkdownRenderer, scroll_to_top::ScrollToTop};
+use crate::{editor::MarkdownRenderer, scroll_to_top::ScrollToTop, util::*};
 
 struct App;
 
@@ -45,17 +46,11 @@ pub fn start() {
 }
 
 fn start_impl() -> Result<()> {
-    let window = window().ok_or(anyhow!("failed to get window"))?;
-
-    let document = window.document().ok_or(anyhow!("failed to get document"))?;
-
-    let app_element = document
-        .get_element_by_id("app")
-        .ok_or(anyhow!("failed to get element with id \"app\""))?;
+    let app_element = get_element_by_id("app")?;
 
     Renderer::<App>::with_root(app_element).render();
 
-    let url = window
+    let url = get_window()?
         .location()
         .pathname()
         .map_err(|_| anyhow!("failed to get pathname"))?;

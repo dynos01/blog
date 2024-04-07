@@ -1,7 +1,9 @@
 use anyhow::{anyhow, Result};
 use wasm_bindgen::{closure::Closure, JsCast};
-use web_sys::{console, window, Event, HtmlElement, ScrollBehavior, ScrollToOptions};
+use web_sys::{console, Event, HtmlElement, ScrollBehavior, ScrollToOptions};
 use yew::{html, Callback, Component, Context, Html};
+
+use crate::util::*;
 
 pub struct ScrollToTop;
 
@@ -33,7 +35,7 @@ impl Component for ScrollToTop {
 }
 
 fn on_click_impl() -> Result<()> {
-    let window = window().ok_or(anyhow!("failed to get window"))?;
+    let window = get_window()?;
 
     let mut options = ScrollToOptions::new();
     options.top(0.0);
@@ -56,8 +58,7 @@ fn add_on_scroll() -> Result<()> {
         onscroll.emit(());
     }) as Box<dyn FnMut(_)>);
 
-    window()
-        .ok_or(anyhow!("failed to get window"))?
+    get_window()?
         .add_event_listener_with_callback("scroll", closure.as_ref().unchecked_ref())
         .map_err(|e| anyhow!("cannot add event listener: {e:?}"))?;
 
@@ -67,18 +68,17 @@ fn add_on_scroll() -> Result<()> {
 }
 
 fn on_scroll_impl() -> Result<()> {
-    let window = window().ok_or(anyhow!("failed to get window"))?;
-
-    let document = window.document().ok_or(anyhow!("failed to get document"))?;
+    let window = get_window()?;
+    let document = get_document()?;
 
     let document_element = document
         .document_element()
         .ok_or(anyhow!("failed to get document element"))?;
 
-    let button = document
-        .get_elements_by_class_name("scroll-to-top")
-        .get_with_index(0)
-        .ok_or(anyhow!("failed to find button"))?
+    let button = get_elements_by_class_name("scroll-to-top")?
+        .into_iter()
+        .next()
+        .ok_or(anyhow!("failed to get scroll to top button"))?
         .dyn_into::<HtmlElement>()
         .map_err(|e| anyhow!("failed to process button: {e:?}"))?;
 

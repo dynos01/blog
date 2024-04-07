@@ -1,7 +1,9 @@
 use anyhow::{anyhow, Result};
 use wasm_bindgen::{closure::Closure, JsCast};
-use web_sys::{console, window, Event, HtmlElement, HtmlTextAreaElement};
+use web_sys::{console, Event, HtmlElement, HtmlTextAreaElement};
 use yew::{html, Callback, Component, Context, Html, Renderer};
+
+use crate::util::*;
 
 pub struct MarkdownRenderer;
 
@@ -24,15 +26,8 @@ impl Component for MarkdownRenderer {
 
 impl MarkdownRenderer {
     pub fn start() -> Result<()> {
-        let editor_element = window()
-            .ok_or(anyhow!("failed to get window"))?
-            .document()
-            .ok_or(anyhow!("failed to get document"))?
-            .get_element_by_id("editor-markdown")
-            .ok_or(anyhow!("failed to get element with id \"editor-markdown\""))?;
-
+        let editor_element = get_element_by_id("editor-markdown")?;
         Renderer::<Self>::with_root(editor_element).render();
-
         Ok(())
     }
 }
@@ -48,12 +43,7 @@ fn add_on_input() -> Result<()> {
         on_input.emit(());
     }) as Box<dyn FnMut(_)>);
 
-    let input_box = window()
-        .ok_or(anyhow!("failed to get window"))?
-        .document()
-        .ok_or(anyhow!("failed to get document"))?
-        .get_element_by_id("editor-markdown")
-        .ok_or(anyhow!("failed to get input-box"))?
+    let input_box = get_element_by_id("editor-markdown")?
         .dyn_into::<HtmlElement>()
         .map_err(|e| anyhow!("failed to process input box: {e:?}"))?;
 
@@ -69,12 +59,7 @@ fn add_on_input() -> Result<()> {
 fn on_input_impl() -> Result<()> {
     use pulldown_cmark::{html, Parser};
 
-    let markdown_input = window()
-        .ok_or(anyhow!("failed to get window"))?
-        .document()
-        .ok_or(anyhow!("failed to get document"))?
-        .get_element_by_id("editor-markdown")
-        .ok_or(anyhow!("failed to get element with id \"editor-markdown\""))?
+    let markdown_input = get_element_by_id("editor-markdown")?
         .dyn_into::<HtmlTextAreaElement>()
         .map_err(|e| anyhow!("failed to process input box: {e:?}"))?
         .value();
@@ -83,15 +68,9 @@ fn on_input_impl() -> Result<()> {
     let mut html_output = String::new();
     html::push_html(&mut html_output, parser);
 
-    window()
-        .ok_or(anyhow!("failed to get window"))?
-        .document()
-        .ok_or(anyhow!("failed to get document"))?
-        .get_elements_by_class_name("markdown-body")
-        .get_with_index(0)
-        .ok_or(anyhow!(
-            "failed to get element with class \"markdown-body\""
-        ))?
+    get_elements_by_class_name("markdown-body")?
+        .get(0)
+        .ok_or(anyhow!("failed to get markdown body"))?
         .set_inner_html(&html_output);
 
     Ok(())
