@@ -10,6 +10,8 @@ use std::{
 };
 
 use anyhow::{anyhow, Result};
+use minify_html::{minify, Cfg};
+use once_cell::sync::Lazy;
 use prost_build::compile_protos;
 
 fn main() -> Result<()> {
@@ -94,6 +96,11 @@ fn load_asset() -> Result<()> {
             &mime_types[ext]
         };
 
+        let buffer = match mime_type.as_str() {
+            "text/css" => minify_html(buffer),
+            _ => buffer,
+        };
+
         let asset = format!("    (\"{path}\", &{buffer:?}, \"{mime_type}\"),\n");
         file.write_all(asset.as_bytes())?;
     }
@@ -147,4 +154,9 @@ fn read_mime_types() -> Result<HashMap<String, String>> {
         .collect();
 
     Ok(mime_types)
+}
+
+pub fn minify_html(orig: Vec<u8>) -> Vec<u8> {
+    static CFG: Lazy<Cfg> = Lazy::new(|| Cfg::spec_compliant());
+    minify(&orig, &CFG)
 }
