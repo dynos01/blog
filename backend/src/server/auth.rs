@@ -1,16 +1,35 @@
-use std::task::{Context, Poll};
+use std::{
+    collections::HashMap,
+    net::{IpAddr, SocketAddr},
+    sync::Mutex,
+    task::{Context, Poll},
+};
 
 use anyhow::Result;
 use axum::{
     body::Body,
-    extract::Request,
+    extract::{ConnectInfo, Request},
     http::{HeaderValue, StatusCode},
     response::Response,
 };
 use base64::{engine::general_purpose::STANDARD, Engine as _};
 use futures_util::future::BoxFuture;
 use log::info;
+use once_cell::sync::Lazy;
 use tower::{Layer, Service};
+
+use crate::util::*;
+
+const MAX_RETRY: u64 = 5;
+const COOLDOWN: i64 = 60 * 60 * 12; // 12 hours
+
+static BLACKLIST: Lazy<Mutex<HashMap<IpAddr, BlacklistStatus>>> =
+    Lazy::new(|| Mutex::new(HashMap::new()));
+
+enum BlacklistStatus {
+    Retry(u64),
+    Bannded(i64),
+}
 
 #[derive(Clone)]
 pub struct Auth {
@@ -21,6 +40,12 @@ pub struct Auth {
 pub struct AuthMiddleware<S> {
     inner: S,
     auth_encoded: String,
+}
+
+impl Default for BlacklistStatus {
+    fn default() -> Self {
+        Self::Retry(1)
+    }
 }
 
 impl Auth {
@@ -48,24 +73,72 @@ impl<S> AuthMiddleware<S> {
         }
     }
 
-    fn auth(&self, header: &HeaderValue) -> bool {
-        self.auth_impl(header).unwrap_or_else(|e| {
+    fn auth(&self, header: &HeaderValue, ip: &IpAddr) -> bool {
+        self.auth_impl(header, ip).unwrap_or_else(|e| {
             info!("Error in validating auth request: {e}, raw header: {header:?}");
             false
         })
     }
 
-    fn auth_impl(&self, header: &HeaderValue) -> Result<bool> {
+    fn auth_impl(&self, header: &HeaderValue, ip: &IpAddr) -> Result<bool> {
         const METHOD: &'static str = "Basic ";
         let header = header.to_str()?;
 
         if !header.starts_with(METHOD) {
+            // An invalid request, no risk
             return Ok(false);
         }
 
+        let mut lock = BLACKLIST.lock().unwrap();
+
+        if let Some(status) = lock.get(&ip) {
+            match status {
+                BlacklistStatus::Retry(count) => {
+                    if count >= &MAX_RETRY {
+                        return Ok(false);
+                    }
+                }
+                BlacklistStatus::Bannded(prev_timestamp) => {
+                    if *prev_timestamp + COOLDOWN < timestamp() {
+                        lock.remove(&ip);
+                    } else {
+                        return Ok(false);
+                    }
+                }
+            }
+        }
+
+        drop(lock);
+
         let encoded = &header[METHOD.len()..];
 
-        Ok(encoded == self.auth_encoded)
+        if encoded != self.auth_encoded {
+            let mut lock = BLACKLIST.lock().unwrap();
+
+            let new_state = match lock.get(&ip) {
+                Some(old_state) => match old_state {
+                    BlacklistStatus::Retry(count) => {
+                        if *count != MAX_RETRY - 1 {
+                            BlacklistStatus::Retry(count + 1)
+                        } else {
+                            info!("Blacklisting {ip} for {MAX_RETRY} failed auth attempt");
+                            BlacklistStatus::Bannded(timestamp())
+                        }
+                    }
+                    BlacklistStatus::Bannded(_) => BlacklistStatus::Bannded(timestamp()),
+                },
+                None => BlacklistStatus::default(),
+            };
+
+            lock.insert(*ip, new_state);
+
+            return Ok(false);
+        }
+
+        let mut lock = BLACKLIST.lock().unwrap();
+        lock.remove(&ip);
+
+        Ok(true)
     }
 }
 
@@ -93,7 +166,10 @@ where
             }
         };
 
-        if !self.auth(auth_header) {
+        let conn: &ConnectInfo<SocketAddr> = request.extensions().get().unwrap();
+        let ip = &conn.0.ip();
+
+        if !self.auth(auth_header, ip) {
             let resp = unauthorized(url);
             return Box::pin(async move { Ok(resp) });
         }

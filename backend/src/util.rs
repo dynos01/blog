@@ -1,6 +1,7 @@
 use std::io::Cursor;
 
 use anyhow::Result;
+use chrono::Utc;
 use minify_html::{minify, Cfg};
 use once_cell::sync::Lazy;
 use prost::Message;
@@ -24,4 +25,9 @@ pub fn minify_html(html: String) -> Result<String> {
     static CFG: Lazy<Cfg> = Lazy::new(|| Cfg::spec_compliant());
     let html = html.as_bytes();
     Ok(std::str::from_utf8(&minify(html, &CFG))?.to_owned())
+}
+
+#[inline]
+pub fn timestamp() -> i64 {
+    Utc::now().timestamp()
 }

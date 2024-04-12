@@ -37,7 +37,11 @@ pub async fn serve(bind: SocketAddr, site: Site) -> Result<()> {
 
     debug!("Listening on {bind}");
     let socket = TcpListener::bind(bind).await?;
-    axum::serve(socket, app).await?;
+    axum::serve(
+        socket,
+        app.into_make_service_with_connect_info::<SocketAddr>(),
+    )
+    .await?;
 
     Ok(())
 }
